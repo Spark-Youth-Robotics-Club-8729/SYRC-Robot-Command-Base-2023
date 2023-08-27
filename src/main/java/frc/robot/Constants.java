@@ -47,29 +47,26 @@ public final class Constants {
     public static final double TRACK_WIDTH_METRES = 0.69;
     public static final double WHEEL_DIAMETER_METRES = 0.15;
 
-    public static final DCMotor kDriveGearbox = DCMotor.getFalcon500(2);
-    public static final double kDriveGearing = 8;
+    public static final DCMotor DRIVE_GEARBOX = DCMotor.getFalcon500(2); // TODO replace with correct ones
+    public static final double DRIVE_GEARING = 8;
 
-    // Example value only - as above, this must be tuned for your drive!
-    public static final double kPDriveVel = 8.5;
-
-    public static final double ksVolts = 0.22;
-    public static final double kvVoltSecondsPerMeter = 1.98;
-    public static final double kaVoltSecondsSquaredPerMeter = 0.2;
+    public static final double V_VOLT_SEC_PER_METRE = 1.98;
+    public static final double A_VOLT_SEC_SQR_PER_METRE = 0.2;
 
     // These are example values only - DO NOT USE THESE FOR YOUR OWN ROBOT!
     // These characterization values MUST be determined either experimentally or theoretically
     // for *your* robot's drive.
     // These two values are "angular" kV and kA
-    public static final double kvVoltSecondsPerRadian = 1.5;
-    public static final double kaVoltSecondsSquaredPerRadian = 0.3;
+    public static final double V_VOLT_SEC_PER_RADIAN = 1.5;
+    public static final double A_VOLT_SEC_SQR_PER_RADIAN = 0.3;
 
-    public static final LinearSystem<N2, N2, N2> kDrivetrainPlant =
-      LinearSystemId.identifyDrivetrainSystem(
-        kvVoltSecondsPerMeter,
-        kaVoltSecondsSquaredPerMeter,
-        kvVoltSecondsPerRadian,
-        kaVoltSecondsSquaredPerRadian);
+    public static final LinearSystem<N2, N2, N2> DRIVE_PLANT =
+        LinearSystemId.identifyDrivetrainSystem(
+            V_VOLT_SEC_PER_METRE,
+            A_VOLT_SEC_SQR_PER_METRE,
+            V_VOLT_SEC_PER_RADIAN,
+            A_VOLT_SEC_SQR_PER_RADIAN
+        );
 
   }
 

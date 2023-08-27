@@ -20,7 +20,6 @@ import frc.robot.commands.RotationCommand;
 import frc.robot.commands.EngageAuto;
 import frc.robot.commands.MobilityAuto;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -72,8 +71,7 @@ public class RobotContainer {
                 () -> (-driverController.getRawAxis(DriveConstants.DRIVE_AXIS)), 
                 () -> (-driverController.getRawAxis(DriveConstants.TURN_AXIS) * DriveConstants.TURN_PROPORTION)
             )
-        );
-
+    );
 
     chooser.setDefaultOption("Engage Auto", engageAuto);
     chooser.addOption("Mobility Auto", mobilityAuto);

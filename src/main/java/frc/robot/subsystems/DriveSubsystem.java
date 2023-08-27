@@ -10,8 +10,6 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
@@ -77,9 +75,9 @@ public class DriveSubsystem extends SubsystemBase {
       // This class simulates our drivetrain's motion around the field.
       drivetrainSimulator =
           new DifferentialDrivetrainSim(
-              DriveConstants.kDrivetrainPlant,
-              DriveConstants.kDriveGearbox,
-              DriveConstants.kDriveGearing,
+              DriveConstants.DRIVE_PLANT,
+              DriveConstants.DRIVE_GEARBOX,
+              DriveConstants.DRIVE_GEARING,
               DriveConstants.TRACK_WIDTH_METRES,
               DriveConstants.WHEEL_DIAMETER_METRES / 2.0,
               VecBuilder.fill(0, 0, 0.0001, 0.1, 0.1, 0.005, 0.005));
