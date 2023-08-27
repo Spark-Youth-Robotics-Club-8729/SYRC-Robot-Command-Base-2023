@@ -63,28 +63,17 @@ public class RobotContainer {
     // Configure the trigger bindings
     configureBindings();
 
-    // elevatorSubsystem.setDefaultCommand(new ElevatorCommand(elevatorSubsystem,
-    // 0));
+    // elevatorSubsystem.setDefaultCommand(new ElevatorCommand(elevatorSubsystem, 0));
     // intakeSubsystem.setDefaultCommand(new IntakeCommand(intakeSubsystem, 0, 0));
-    // rotationSubsystem.setDefaultCommand(new RotationCommand(rotationSubsystem,
-    // RotationConstants.ROTATION_STALL, RotationConstants.ROTATION_STALL));
-    // driveSubsystem.setDefaultCommand(new ArcadeDriveCommand(driveSubsystem, () ->
-    // driverController.getRawAxis(DriveConstants.DRIVE_AXIS), () ->
-    // (-driverController.getRawAxis(DriveConstants.TURN_AXIS) *
-    // DriveConstants.TURN_PROPORTION)));
-    // Configure default commands
-    // Set the default drive command to split-stick arcade drive
+    // rotationSubsystem.setDefaultCommand(new RotationCommand(rotationSubsystem, RotationConstants.ROTATION_STALL, RotationConstants.ROTATION_STALL));
     driveSubsystem.setDefaultCommand(
-        // A split-stick arcade command, with forward/backward controlled by the left
-        // hand, and turning controlled by the right.
-        // If you are using the keyboard as a joystick, it is recommended that you go
-        // to the following link to read about editing the keyboard settings.
-        // https://docs.wpilib.org/en/stable/docs/software/wpilib-tools/robot-simulation/simulation-gui.html#using-the-keyboard-as-a-joystick
-        new RunCommand(
-            () -> driveSubsystem.setMotor(
-                operatorController.getRawAxis(DriveConstants.DRIVE_AXIS),
-                -operatorController.getRawAxis(DriveConstants.TURN_AXIS) * DriveConstants.TURN_PROPORTION),
-            driveSubsystem));
+            new ArcadeDriveCommand(
+                driveSubsystem, 
+                () -> (-driverController.getRawAxis(DriveConstants.DRIVE_AXIS)), 
+                () -> (-driverController.getRawAxis(DriveConstants.TURN_AXIS) * DriveConstants.TURN_PROPORTION)
+            )
+        );
+
 
     chooser.setDefaultOption("Engage Auto", engageAuto);
     chooser.addOption("Mobility Auto", mobilityAuto);

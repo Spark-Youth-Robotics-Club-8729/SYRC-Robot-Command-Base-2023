@@ -4,6 +4,9 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.hal.SimDouble;
+import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
@@ -40,17 +43,17 @@ public class DriveSubsystem extends SubsystemBase {
 
   private final AHRS gyro = new AHRS(SPI.Port.kMXP);
   private final Encoder encoderLeftDrive = new Encoder(DriveConstants.LEFT_ENCODER_A, DriveConstants.LEFT_ENCODER_B);
-  private final Encoder encoderRightDrive = new Encoder(0, 0); // TODO fill in these with right encoder channels
+  private final Encoder encoderRightDrive = new Encoder(7, 8, true); // TODO fill in these with right encoder channels
 
   // Odometry class for tracking robot pose
   private final DifferentialDriveOdometry odometry;
 
   // simulation stuff
-  private final Field2d field2d;
+  private final Field2d fieldSim;
   private final EncoderSim leftEncoderSim;
   private final EncoderSim rightEncoderSim;
   private final SimDeviceSim gyroSim;
-  private final DifferentialDrivetrainSim drivetrainSim;
+  private final DifferentialDrivetrainSim drivetrainSimulator;
 
   public DriveSubsystem() {
     driveFrontLeft.setNeutralMode(NeutralMode.Brake);
@@ -59,32 +62,43 @@ public class DriveSubsystem extends SubsystemBase {
     driveBackRight.setNeutralMode(NeutralMode.Brake);
     driveRight.setInverted(true);
 
-    resetEncoders();
-    odometry = new DifferentialDriveOdometry(
-        Rotation2d.fromDegrees(getGyroYaw()),
-        encoderLeftDrive.getDistance(),
-        encoderRightDrive.getDistance());
+    // Sets the distance per pulse for the encoders
+    encoderLeftDrive.setDistancePerPulse(DriveConstants.ENCODER_DISTANCE_PER_PULSE);
+    encoderRightDrive.setDistancePerPulse(DriveConstants.ENCODER_DISTANCE_PER_PULSE);
 
-    if (RobotBase.isSimulation()) {
-      field2d = new Field2d();
+    resetEncoders();
+    odometry =
+        new DifferentialDriveOdometry(
+            Rotation2d.fromDegrees(getHeading()),
+            encoderLeftDrive.getDistance(),
+            encoderRightDrive.getDistance());
+
+    if (RobotBase.isSimulation()) { // If our robot is simulated
+      // This class simulates our drivetrain's motion around the field.
+      drivetrainSimulator =
+          new DifferentialDrivetrainSim(
+              DriveConstants.kDrivetrainPlant,
+              DriveConstants.kDriveGearbox,
+              DriveConstants.kDriveGearing,
+              DriveConstants.TRACK_WIDTH_METRES,
+              DriveConstants.WHEEL_DIAMETER_METRES / 2.0,
+              VecBuilder.fill(0, 0, 0.0001, 0.1, 0.1, 0.005, 0.005));
+
+      // The encoder and gyro angle sims let us set simulated sensor readings
       leftEncoderSim = new EncoderSim(encoderLeftDrive);
       rightEncoderSim = new EncoderSim(encoderRightDrive);
-      gyroSim = new SimDeviceSim("NavX-Sensor[0]"); // TODO verify device tag?
-      drivetrainSim = new DifferentialDrivetrainSim(
-          LinearSystemId.identifyDrivetrainSystem(1.98, 0.2, 1.5, 0.3), // TODO replace these with actual values
-          DCMotor.getFalcon500(2), // TODO is this actually the right motors??
-          8, // TODO fill in actual gearing
-          0.76, // TODO fill in actual track width
-          0.0508, // TODO fill in actual wheel radius
-          null);
+      gyroSim = new SimDeviceSim(DriveConstants.GYRO_SENSOR_NAME); // TODO verify device tag?
 
-      SmartDashboard.putData("Field", field2d);
+      // the Field2d class lets us visualize our robot in the simulation GUI.
+      fieldSim = new Field2d();
+      SmartDashboard.putData("Field", fieldSim);
     } else {
-      field2d = null;
+      drivetrainSimulator = null;
       leftEncoderSim = null;
       rightEncoderSim = null;
       gyroSim = null;
-      drivetrainSim = null;
+
+      fieldSim = null;
     }
   }
 
@@ -122,29 +136,36 @@ public class DriveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Encoder Left Distance", encoderLeftDrive.getDistance());
 
     odometry.update(
-        Rotation2d.fromDegrees(getGyroYaw()),
+        Rotation2d.fromDegrees(getHeading()),
         leftEncoderSim.getDistance(),
         rightEncoderSim.getDistance()
     );
 
-    if (field2d != null) {
-      field2d.setRobotPose(getPose());
+    if (fieldSim != null) {
+      fieldSim.setRobotPose(getPose());
     }
   }
 
   @Override
   public void simulationPeriodic() {
-    drivetrainSim.setInputs(
+    drivetrainSimulator.setInputs(
         driveLeft.get() * RobotController.getBatteryVoltage(),
         driveRight.get() * RobotController.getBatteryVoltage()
     );
-    drivetrainSim.update(0.02);
+    drivetrainSimulator.update(0.020);
 
-    leftEncoderSim.setDistance(drivetrainSim.getLeftPositionMeters());
-    leftEncoderSim.setRate(drivetrainSim.getLeftVelocityMetersPerSecond());
-    rightEncoderSim.setDistance(drivetrainSim.getRightPositionMeters());
-    rightEncoderSim.setRate(drivetrainSim.getRightVelocityMetersPerSecond());
-    gyroSim.getDouble("Yaw").set(drivetrainSim.getHeading().getDegrees());
+    leftEncoderSim.setDistance(drivetrainSimulator.getLeftPositionMeters());
+    leftEncoderSim.setRate(drivetrainSimulator.getLeftVelocityMetersPerSecond());
+    rightEncoderSim.setDistance(drivetrainSimulator.getRightPositionMeters());
+    rightEncoderSim.setRate(drivetrainSimulator.getRightVelocityMetersPerSecond());
+
+    setGyroHeading(-drivetrainSimulator.getHeading().getDegrees());
+  }
+
+  public void setGyroHeading(double gyroHeading) {
+    int dev = SimDeviceDataJNI.getSimDeviceHandle(DriveConstants.GYRO_SENSOR_NAME);
+    SimDouble gyroSimAngle = new SimDouble(SimDeviceDataJNI.getSimValueHandle(dev, "Yaw"));
+    gyroSimAngle.set(gyroHeading);
   }
 
   private Pose2d getPose() {
@@ -153,5 +174,9 @@ public class DriveSubsystem extends SubsystemBase {
 
   public void setMotor(double forwardSpeed, double turnSpeed) {
     driveRobot.arcadeDrive(forwardSpeed, turnSpeed);
+  }
+
+  public double getHeading() {
+    return Math.IEEEremainder(gyro.getYaw(), 360) * -1.0;
   }
 }

@@ -162,3 +162,5 @@ bin/
 *-window.json
 
 **/.metals/
+
+simgui.json
