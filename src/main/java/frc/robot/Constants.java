@@ -4,6 +4,11 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.system.LinearSystem;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.system.plant.DCMotor;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -32,6 +37,37 @@ public final class Constants {
     public static final double TURN_SLOW = 0.8;
     public static final int SLOW_BUTTON = 1;
     public static final int NORMAL_BUTTON = 2;
+
+    public static final int ENCODER_CPR = 1024;
+    public static final double WHEEL_DIAMETER = 0.15;
+    public static final double ENCODER_DISTANCE_PER_PULSE = 
+        (WHEEL_DIAMETER * Math.PI) / (double) ENCODER_CPR;
+
+    public static final String GYRO_SENSOR_NAME = "navX-Sensor[0]";
+    public static final double TRACK_WIDTH_METRES = 0.69;
+    public static final double WHEEL_DIAMETER_METRES = 0.15;
+
+    public static final DCMotor DRIVE_GEARBOX = DCMotor.getFalcon500(2); // TODO replace with correct ones
+    public static final double DRIVE_GEARING = 8;
+
+    public static final double V_VOLT_SEC_PER_METRE = 1.98;
+    public static final double A_VOLT_SEC_SQR_PER_METRE = 0.2;
+
+    // These are example values only - DO NOT USE THESE FOR YOUR OWN ROBOT!
+    // These characterization values MUST be determined either experimentally or theoretically
+    // for *your* robot's drive.
+    // These two values are "angular" kV and kA
+    public static final double V_VOLT_SEC_PER_RADIAN = 1.5;
+    public static final double A_VOLT_SEC_SQR_PER_RADIAN = 0.3;
+
+    public static final LinearSystem<N2, N2, N2> DRIVE_PLANT =
+        LinearSystemId.identifyDrivetrainSystem(
+            V_VOLT_SEC_PER_METRE,
+            A_VOLT_SEC_SQR_PER_METRE,
+            V_VOLT_SEC_PER_RADIAN,
+            A_VOLT_SEC_SQR_PER_RADIAN
+        );
+
   }
 
   public static class ElevatorConstants {
